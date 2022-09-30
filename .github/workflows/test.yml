@@ -17,6 +17,11 @@ jobs:
         with:
           channel: "stable"
 
+      - name: Register all dart files
+        uses: stelynx/dart-full-coverage@v1.0.5
+        with:
+          package: craft
+
       - name: Test
         run: |
           flutter pub get
