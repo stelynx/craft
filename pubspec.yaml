@@ -1,0 +1,16 @@
+name: craft
+description: Provides offline support for network requests
+version: 0.0.0
+# homepage: https://www.example.com
+repository: https://github.com/stelynx/craft
+environment:
+  sdk: ">=2.17.6 <3.0.0"
+
+dependencies:
+  hive: ^2.2.3
+  http: ^0.13.5
+  meta: ^1.8.0
+
+dev_dependencies:
+  kamino_flutter_lints: null
+  test: ^1.16.0
