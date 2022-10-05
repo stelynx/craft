@@ -10,8 +10,16 @@ mixin AutoRefreshing on Refreshable {
   /// {@endtemplate}
   late final Duration Function(String) _tokenExpiration;
 
+  /// {@template craft.auto_refreshing.refresh_timer}
   /// Timer that triggers token refresh.
+  /// {@endtemplate}
   late Timer _refreshTimer;
+
+  /// {@macro craft.auto_refreshing.refresh_timer}
+  ///
+  /// {@macro craft.visible_for_testing}
+  @visibleForTesting
+  Timer get refreshTimer => _refreshTimer;
 
   /// Used internally to set [AutoRefreshing] variables.
   ///
@@ -21,6 +29,14 @@ mixin AutoRefreshing on Refreshable {
     required Duration Function(String) tokenExpiration,
   }) {
     _tokenExpiration = tokenExpiration;
+    _refreshTimer = Timer(_tokenExpiration(_refreshToken), refreshTokens);
+  }
+
+  /// Cancels the [_refreshTimer] and calls the super close method.
+  @override
+  void close() {
+    _refreshTimer.cancel();
+    super.close();
   }
 
   /// {@macro craft.refreshable.set_tokens}
@@ -29,7 +45,7 @@ mixin AutoRefreshing on Refreshable {
   @override
   void setTokens(TokenPair tokens) {
     _refreshTimer.cancel();
-    _refreshTimer = Timer(_tokenExpiration(tokens.access), refreshToken);
+    _refreshTimer = Timer(_tokenExpiration(tokens.access), refreshTokens);
     super.setTokens(tokens);
   }
 
@@ -38,49 +54,51 @@ mixin AutoRefreshing on Refreshable {
   /// Additionally, it sets the [_refreshTimer] to automatically refresh the
   /// [_accessToken] when it expires.
   @override
-  Future<void> refreshToken() async {
-    await super.refreshToken();
-    _refreshTimer = Timer(_tokenExpiration(_accessToken!), refreshToken);
+  Future<void> refreshTokens() async {
+    await super.refreshTokens();
+    _refreshTimer = Timer(_tokenExpiration(_accessToken), refreshTokens);
   }
 }
 
 /// [RefreshableTokenOauthCraft] with ability to automatically refresh
-/// [_accessToken] and [_refreshToken] using [refreshToken] method from
+/// [_accessToken] and [_refreshToken] using [refreshTokens] method from
 /// [AutoRefreshing].
 class AutoRefreshingTokenOauthCraft extends RefreshableTokenOauthCraft
     with AutoRefreshing {
-  /// Creates new instance of [AutoRefreshingTokenOauthCraft] with optional
-  /// [tokens] pair, a required [refreshTokenMethod], and a required
-  /// [tokenExpiration] method.
+  /// Creates new instance of [AutoRefreshingTokenOauthCraft] with [tokens]
+  /// pair, a required [refreshTokenMethod], and a required [tokenExpiration]
+  /// method. Underlying [client] can also be provided.
   ///
   /// {@macro craft.refreshable.init}
   ///
   /// {@macro craft.auto_refreshing.token_expiration}
   AutoRefreshingTokenOauthCraft({
-    super.tokens,
+    required super.tokens,
     required super.refreshTokenMethod,
     required Duration Function(String) tokenExpiration,
+    super.client,
   }) {
     _initAutoRefreshing(tokenExpiration: tokenExpiration);
   }
 }
 
 /// [RefreshableBearerOauthCraft] with ability to automatically refresh
-/// [_accessToken] and [_refreshToken] using [refreshToken] method from
+/// [_accessToken] and [_refreshToken] using [refreshTokens] method from
 /// [AutoRefreshing].
 class AutoRefreshingBearerOauthCraft extends RefreshableBearerOauthCraft
     with AutoRefreshing {
-  /// Creates new instance of [AutoRefreshingBearerOauthCraft] with optional
-  /// [tokens] pair, a required [refreshTokenMethod], and a required
-  /// [tokenExpiration] method.
+  /// Creates new instance of [AutoRefreshingBearerOauthCraft] with [tokens]
+  /// pair, a required [refreshTokenMethod], and a required [tokenExpiration]
+  /// method. Underlying [client] can also be provided.
   ///
   /// {@macro craft.refreshable.init}
   ///
   /// {@macro craft.auto_refreshing.token_expiration}
   AutoRefreshingBearerOauthCraft({
-    super.tokens,
+    required super.tokens,
     required super.refreshTokenMethod,
     required Duration Function(String) tokenExpiration,
+    super.client,
   }) {
     _initAutoRefreshing(tokenExpiration: tokenExpiration);
   }

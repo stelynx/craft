@@ -13,7 +13,7 @@ enum HttpMethod {
 }
 
 /// A base request class providing information about an HTTP request.
-class Request<T extends Serializable?> {
+class Request<T> {
   /// The [method] to be used for HTTP request.
   final HttpMethod method;
 
