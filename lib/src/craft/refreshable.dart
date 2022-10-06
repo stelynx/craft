@@ -1,16 +1,16 @@
 part of 'craft.dart';
 
-/// Provides functionality for refreshing the [_accessToken] using
-/// [_refreshToken] and [_refreshTokenMethod].
+/// Provides functionality for refreshing the [accessToken] using [refreshToken]
+/// and given refresh token method.
 mixin Refreshable on OauthCraft {
   /// {@template craft.refreshable.refresh_token_method}
   /// Method is used to refresh tokens. It has to be provided by the user.
-  /// This is usually an API call with [_refreshToken].
+  /// This is usually an API call with [refreshToken].
   /// {@endtemplate}
   late final Future<TokenPair> Function(String) _refreshTokenMethod;
 
   /// {@template craft.refreshable.refresh_token}
-  /// A [_refreshToken] used to obtain a new [_accessToken].
+  /// A [refreshToken] used to obtain a new [accessToken].
   /// {@endtemplate}
   late String _refreshToken;
 
@@ -38,8 +38,8 @@ mixin Refreshable on OauthCraft {
   }
 
   /// {@template craft.refreshable.set_tokens}
-  /// Sets the [_accessToken] and [_refreshToken] to corresponding values
-  /// from [tokens].
+  /// Sets the [accessToken] and [refreshToken] to corresponding values from
+  /// [tokens].
   /// {@endtemplate}
   @mustCallSuper
   void setTokens(TokenPair tokens) {
@@ -48,7 +48,7 @@ mixin Refreshable on OauthCraft {
   }
 
   /// {@template craft.refreshable.refresh_token}
-  /// Refreshes the [_accessToken] and [_refreshToken].
+  /// Refreshes the [accessToken] and [refreshToken].
   /// {@endtemplate}
   @mustCallSuper
   Future<void> refreshTokens() async {
@@ -56,7 +56,7 @@ mixin Refreshable on OauthCraft {
   }
 }
 
-/// [TokenOauthCraft] with ability to refresh [_accessToken] using
+/// [TokenOauthCraft] with ability to refresh [accessToken] using
 /// [refreshTokens] method from [Refreshable].
 class RefreshableTokenOauthCraft extends TokenOauthCraft with Refreshable {
   /// Creates new instance of [RefreshableTokenOauthCraft] with [tokens] pair
@@ -75,7 +75,7 @@ class RefreshableTokenOauthCraft extends TokenOauthCraft with Refreshable {
   }
 }
 
-/// [BearerOauthCraft] with ability to refresh [_accessToken] using
+/// [BearerOauthCraft] with ability to refresh [accessToken] using
 /// [refreshTokens] method from [Refreshable].
 class RefreshableBearerOauthCraft extends BearerOauthCraft with Refreshable {
   /// Creates new instance of [RefreshableBearerOauthCraft] with [tokens] pair

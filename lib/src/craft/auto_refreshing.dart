@@ -4,9 +4,9 @@ part of 'craft.dart';
 /// `Duration` obtained from [_accessToken] using [_tokenExpiration] method.
 mixin AutoRefreshing on Refreshable {
   /// {@template craft.auto_refreshing.token_expiration}
-  /// [_tokenExpiration] is a method for obtaining `Duration` after which the
-  /// [_accessToken] expires from [_accessToken]. Usually, this is obtained from
-  /// JWT token, but can also be set to a manual value.
+  /// Method for obtaining `Duration` after which the [accessToken] expires from
+  /// [accessToken]. Usually, this is obtained from a JWT token, but can also be
+  /// set to a manual value.
   /// {@endtemplate}
   late final Duration Function(String) _tokenExpiration;
 
@@ -32,7 +32,7 @@ mixin AutoRefreshing on Refreshable {
     _refreshTimer = Timer(_tokenExpiration(_refreshToken), refreshTokens);
   }
 
-  /// Cancels the [_refreshTimer] and calls the super close method.
+  /// Cancels the [refreshTimer] and calls the super close method.
   @override
   void close() {
     _refreshTimer.cancel();
@@ -41,7 +41,7 @@ mixin AutoRefreshing on Refreshable {
 
   /// {@macro craft.refreshable.set_tokens}
   ///
-  /// Additionally, it re-sets the [_refreshTimer].
+  /// Additionally, it re-sets the [refreshTimer].
   @override
   void setTokens(TokenPair tokens) {
     _refreshTimer.cancel();
@@ -51,8 +51,8 @@ mixin AutoRefreshing on Refreshable {
 
   /// {@macro craft.refreshable.refresh_token}
   ///
-  /// Additionally, it sets the [_refreshTimer] to automatically refresh the
-  /// [_accessToken] when it expires.
+  /// Additionally, it sets the [refreshTimer] to automatically refresh the
+  /// [accessToken] when it expires.
   @override
   Future<void> refreshTokens() async {
     await super.refreshTokens();
@@ -61,7 +61,7 @@ mixin AutoRefreshing on Refreshable {
 }
 
 /// [RefreshableTokenOauthCraft] with ability to automatically refresh
-/// [_accessToken] and [_refreshToken] using [refreshTokens] method from
+/// [accessToken] and [refreshToken] using [refreshTokens] method from
 /// [AutoRefreshing].
 class AutoRefreshingTokenOauthCraft extends RefreshableTokenOauthCraft
     with AutoRefreshing {
@@ -83,7 +83,7 @@ class AutoRefreshingTokenOauthCraft extends RefreshableTokenOauthCraft
 }
 
 /// [RefreshableBearerOauthCraft] with ability to automatically refresh
-/// [_accessToken] and [_refreshToken] using [refreshTokens] method from
+/// [accessToken] and [refreshToken] using [refreshTokens] method from
 /// [AutoRefreshing].
 class AutoRefreshingBearerOauthCraft extends RefreshableBearerOauthCraft
     with AutoRefreshing {

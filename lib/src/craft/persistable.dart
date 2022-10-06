@@ -46,7 +46,7 @@ mixin Persistable {
     persist();
   }
 
-  /// Saves [_tokenToPersist] to secure storage using [_tokenStorageKey].
+  /// Saves [tokenToPersist] to [tokenStorage].
   @mustCallSuper
   FutureOr<void> persist() {
     return _tokenStorage.saveToken(_tokenToPersist);
@@ -59,7 +59,7 @@ mixin Persistable {
   }
 }
 
-/// Extends [Persistable] functionality to save [_accessToken].
+/// Extends [Persistable] functionality to save [accessToken].
 mixin AccessTokenPersistable on Persistable, OauthCraft {
   @mustCallSuper
   @override
@@ -75,8 +75,7 @@ mixin AccessTokenPersistable on Persistable, OauthCraft {
   String get _tokenToPersist => _accessToken;
 }
 
-/// Extends [Persistable] functionality to save [_refreshToken] from
-/// [Refreshable].
+/// Extends [Persistable] functionality to save [refreshToken].
 mixin RefreshTokenPersistable on Persistable, Refreshable {
   @mustCallSuper
   @override

@@ -1,6 +1,6 @@
 part of 'craft.dart';
 
-/// Craft implementing the OAuth flow. It has an [_accessToken] which can be a
+/// Craft implementing the OAuth flow. It has an [accessToken] which can be a
 /// regular token, a bearer token, or a custom one by defining a custom craft
 /// extending the [OauthCraft].
 ///
@@ -48,7 +48,7 @@ abstract class OauthCraft extends BaseCraft {
   }
 }
 
-/// [OauthCraft] that uses "Token [_accessToken]" as Authorization header.
+/// [OauthCraft] that uses "Token [accessToken]" as Authorization header.
 class TokenOauthCraft extends OauthCraft {
   /// Creates new instance of [TokenOauthCraft] with [accessToken]. Underlying
   /// client can be provided as well, if not, the default one is used.
@@ -59,7 +59,7 @@ class TokenOauthCraft extends OauthCraft {
   String get authorizationHeaderValue => 'Token $_accessToken';
 }
 
-/// [OauthCraft] that uses "Bearer [_accessToken]" as Authorization header.
+/// [OauthCraft] that uses "Bearer [accessToken]" as Authorization header.
 class BearerOauthCraft extends OauthCraft {
   /// Creates new instance of [BearerOauthCraft] with [accessToken]. Underlying
   /// client can be provided as well, if not, the default one is used.

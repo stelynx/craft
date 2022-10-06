@@ -19,7 +19,7 @@ class BaseCraft {
   /// Creates new [BaseCraft] instance.
   BaseCraft({http.Client? client}) : _client = client ?? http.Client();
 
-  /// Closes the underlying [_client].
+  /// Closes the underlying [client].
   @mustCallSuper
   void close() {
     _client.close();
