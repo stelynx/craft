@@ -38,6 +38,7 @@ jobs:
         uses: dart-lang/setup-dart@v1.3
       - name: Generate documentation
         run: |
+          dart pub global activate dartdoc
           flutter pub get
           dartdoc --output website/docs
       - name: Setup Pages
