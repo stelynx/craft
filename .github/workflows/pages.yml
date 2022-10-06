@@ -34,8 +34,12 @@ jobs:
         uses: subosito/flutter-action@v2.4.0
         with:
           channel: "stable"
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1.3
       - name: Generate documentation
-        run: dartdoc --output website/docs
+        run: |
+          flutter pub get
+          dartdoc --output website/docs
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
