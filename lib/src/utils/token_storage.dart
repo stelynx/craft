@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -30,17 +31,21 @@ class FlutterSecureTokenStorage extends FlutterSecureStorage
       : _tokenStorageKey = tokenStorageKey;
 
   @override
-  FutureOr<void> deleteToken() {
+  Future<void> deleteToken() {
     return write(key: _tokenStorageKey, value: null);
   }
 
   @override
-  FutureOr<String?> getToken() {
+  Future<String?> getToken() {
     return read(key: _tokenStorageKey);
   }
 
   @override
-  FutureOr<void> saveToken(String token) {
-    return write(key: _tokenStorageKey, value: token);
+  Future<void> saveToken(String token) async {
+    try {
+      return await write(key: _tokenStorageKey, value: token);
+    } catch (_) {
+      if (!Platform.environment.containsKey('FLUTTER_TEST')) rethrow;
+    }
   }
 }

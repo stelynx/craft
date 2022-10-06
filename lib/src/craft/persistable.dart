@@ -8,13 +8,27 @@ part of 'craft.dart';
 /// access token does not expire and refresh token is not used, access token can
 /// be persisted.
 mixin Persistable {
+  /// {@template craft.persistable.token_storage}
   /// Instance of [TokenStorage] used for storing and retrieving token.
+  /// {@endtemplate}
   late final TokenStorage _tokenStorage;
+
+  /// {@macro craft.persistable.token_storage}
+  ///
+  /// {@macro craft.visible_for_testing}
+  @visibleForTesting
+  TokenStorage get tokenStorage => _tokenStorage;
 
   /// {@template craft.persistable.token_to_persist}
   /// Getter for a token that should be persisted.
   /// {@endtemplate}
   String get _tokenToPersist;
+
+  /// {@macro craft.persistable.token_to_persist}
+  ///
+  /// {@macro craft.visible_for_testing}
+  @visibleForTesting
+  String get tokenToPersist => _tokenToPersist;
 
   /// Used internally to set [Persistable] variables.
   void _initPersistable({
@@ -33,6 +47,7 @@ mixin Persistable {
   }
 
   /// Saves [_tokenToPersist] to secure storage using [_tokenStorageKey].
+  @mustCallSuper
   FutureOr<void> persist() {
     return _tokenStorage.saveToken(_tokenToPersist);
   }

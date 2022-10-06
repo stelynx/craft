@@ -33,7 +33,7 @@ mixin Refreshable on OauthCraft {
     required String refreshToken,
     required Future<TokenPair> Function(String) refreshTokenMethod,
   }) {
-    this.refreshToken = refreshToken;
+    _refreshToken = refreshToken;
     _refreshTokenMethod = refreshTokenMethod;
   }
 

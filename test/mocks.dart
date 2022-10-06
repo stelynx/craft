@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:craft/src/utils/token_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:mockito/mockito.dart';
 
@@ -49,3 +50,5 @@ class MockHttpClient extends Mock implements http.Client {
             Future<http.Response>(() async => http.Response('', HttpStatus.ok)),
       ) as Future<http.Response>;
 }
+
+class MockTokenStorage extends Mock implements TokenStorage {}
