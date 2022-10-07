@@ -1,7 +1,8 @@
 name: Publish to pub.dev
 
 on:
-  release: [published]
+  release:
+    types: [published]
 
 jobs:
   publish:
