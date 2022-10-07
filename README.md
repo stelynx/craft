@@ -7,6 +7,7 @@
 <a href="https://github.com/stelynx/craft/actions/workflows/lint.yml"><img src="https://github.com/stelynx/craft/actions/workflows/lint.yml/badge.svg" alt="lint"></a>
 <a href="https://github.com/stelynx/craft/actions/workflows/test.yml"><img src="https://github.com/stelynx/craft/actions/workflows/test.yml/badge.svg" alt="test"></a>
 <a href="https://github.com/stelynx/craft/actions/workflows/pages.yml"><img src="https://github.com/stelynx/craft/actions/workflows/pages.yml/badge.svg" alt="deploy website"></a>
+<a href="https://github.com/stelynx/craft/actions/workflows/publish.yml"><img src="https://github.com/stelynx/craft/actions/workflows/publish.yml/badge.svg" alt="publish"></a>
 <a href="https://codecov.io/gh/felangel/bloc"><img src="https://codecov.io/gh/stelynx/craft/branch/master/graph/badge.svg" alt="codecov"></a>
 <a href="https://github.com/stelynx/craft"><img src="https://img.shields.io/github/stars/stelynx/craft.svg?style=flat&logo=github&colorB=fbae17&label=stars" alt="Star on Github"></a>
 <a href="https://github.com/kaminomobile/kamino_flutter_lints"><img src="https://img.shields.io/badge/style-kamino-000000.svg" alt="style: kamino flutter lints"></a>
