@@ -1,1 +1,220 @@
-Hello world!
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Craft Library</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta
+      name="description"
+      content="Official documentation for the craft library."
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Craft Library" />
+    <meta
+      property="og:description"
+      content="Official documentation for the craft library."
+    />
+    <meta
+      property="og:image"
+      content="https://craftlib.com/assets/open_graph.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="icon"
+      href="https://craftlib.com/assets/favicon.ico"
+      type="image/x-icon"
+    />
+    <style type="text/css">
+      @font-face {
+        font-family: AmericanTypewriter;
+        src: url("assets/AmericanTypewriter.ttc");
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: AmericanTypewriter;
+        font-size: 20px;
+        overflow: hidden;
+      }
+
+      #wrapper {
+        min-height: 100%;
+        text-align: center;
+        background: rgb(255, 207, 63);
+        background: -moz-radial-gradient(
+          circle,
+          rgba(255, 207, 63, 0.3) 0%,
+          rgba(255, 207, 63, 0.75) 75%,
+          rgba(251, 174, 23, 1) 100%
+        );
+        background: -webkit-radial-gradient(
+          circle,
+          rgba(255, 207, 63, 0.3) 0%,
+          rgba(255, 207, 63, 0.75) 75%,
+          rgba(251, 174, 23, 1) 100%
+        );
+        background: radial-gradient(
+          circle,
+          rgba(255, 207, 63, 0.3) 0%,
+          rgba(255, 207, 63, 0.75) 75%,
+          rgba(251, 174, 23, 1) 100%
+        );
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ffcf3f",endColorstr="#fbae17",GradientType=1);
+      }
+
+      #content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+      }
+
+      #bmac {
+        position: absolute;
+        top: -20px;
+        right: -120px;
+        padding: 30px 100px 30px 100px;
+        transform: rotate(45deg);
+        background: rgb(239, 239, 239);
+        background: -moz-linear-gradient(
+          0deg,
+          rgba(239, 239, 239, 0) 0%,
+          rgba(239, 239, 239, 0.5) 50%,
+          rgba(239, 239, 239, 1) 100%
+        );
+        background: -webkit-linear-gradient(
+          0deg,
+          rgba(239, 239, 239, 0) 0%,
+          rgba(239, 239, 239, 0.5) 50%,
+          rgba(239, 239, 239, 1) 100%
+        );
+        background: linear-gradient(
+          0deg,
+          rgba(239, 239, 239, 0) 0%,
+          rgba(239, 239, 239, 0.75) 50%,
+          rgba(239, 239, 239, 1) 100%
+        );
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#efefef",endColorstr="#efefef",GradientType=1);
+      }
+
+      #bmac > img {
+        display: block;
+        margin: 0 auto;
+      }
+
+      @keyframes shake {
+        0% {transform: rotate(0deg);}
+        33% {transform: rotate(5deg);}
+        66% {transform: rotate(-5deg);}
+        100% {transform: rotate(0deg);}
+      }
+
+      #bmac:hover > img {
+        animation: shake 0.2s linear 0s 1 normal none;
+      }
+
+      div.separator {
+        height: 40px;
+      }
+
+      .button {
+        margin: 20px;
+        text-decoration: none;
+        line-height: 1;
+        font-size: 20px;
+        color: rgba(251, 174, 23, 1);
+        padding: 10px 40px;
+        border: 1px solid rgba(251, 174, 23, 1);
+        border-radius: 100vmin;
+      }
+
+      .button:hover {
+        color: rgba(126, 91, 20, 1);
+        border: 1px solid rgba(126, 91, 20, 1);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="content">
+        <img
+          src="https://raw.githubusercontent.com/stelynx/craft/master/misc/logo_text.svg"
+          height="150px"
+          alt="Craft Logo"
+        />
+        <div class="separator"></div>
+        <a href="https://pub.dev/packages/craft"
+          ><img
+            src="https://img.shields.io/pub/v/craft?color=40c4ff&logo=dart"
+            alt="pub.dev package"
+        /></a>
+        <a href="https://github.com/stelynx/craft/actions/workflows/lint.yml"
+          ><img
+            src="https://github.com/stelynx/craft/actions/workflows/lint.yml/badge.svg"
+            alt="lint"
+        /></a>
+        <a href="https://github.com/stelynx/craft/actions/workflows/test.yml"
+          ><img
+            src="https://github.com/stelynx/craft/actions/workflows/test.yml/badge.svg"
+            alt="test"
+        /></a>
+        <a href="https://github.com/stelynx/craft/actions/workflows/pages.yml"
+          ><img
+            src="https://github.com/stelynx/craft/actions/workflows/pages.yml/badge.svg"
+            alt="deploy website"
+        /></a>
+        <a href="https://codecov.io/gh/felangel/bloc"
+          ><img
+            src="https://codecov.io/gh/stelynx/craft/branch/master/graph/badge.svg"
+            alt="codecov"
+        /></a>
+        <a href="https://github.com/stelynx/craft"
+          ><img
+            src="https://img.shields.io/github/stars/stelynx/craft.svg?style=flat&logo=github&colorB=fbae17&label=stars"
+            alt="Star on Github"
+        /></a>
+        <a href="https://github.com/kaminomobile/kamino_flutter_lints"
+          ><img
+            src="https://img.shields.io/badge/style-kamino-000000.svg"
+            alt="style: kamino flutter lints"
+        /></a>
+        <a href="LICENSE"
+          ><img
+            src="https://img.shields.io/github/license/stelynx/craft?color=purple"
+            alt="License: GPL-3.0"
+        /></a>
+        <a href="https://craftlib.com"
+          ><img
+            src="https://img.shields.io/badge/website-craftlib.com-fbae17"
+            alt="Bloc Library"
+        /></a>
+        <div class="separator"></div>
+        Simple and intuitive HTTP clients (<b>craft</b>s) that support OAuth
+        token auto-refresh, queueing and serialization of requests, storing
+        requests locally for offline support ...
+        <div class="separator"></div>
+        <a
+          class="button"
+          href="https://github.com/stelynx/craft"
+          target="_blank"
+          >GitHub</a
+        >
+        <a class="button" href="docs">Documentation</a>
+      </div>
+      <a href="https://www.buymeacoffee.com/campovski" target="_blank">
+        <div id="bmac">
+          <img src="assets/bmac_logo.svg" height="50px" />
+          <img src="assets/bmac_text.svg" height="25px" />
+        </div>
+      </a>
+    </div>
+  </body>
+</html>

@@ -1,5 +1,5 @@
 <p align="center">
-<img src="misc/logo_text.svg" height="150" alt="Craft" />
+<img src="https://raw.githubusercontent.com/stelynx/craft/master/misc/logo_text.svg" height="150" alt="Craft" />
 </p>
 
 <p align="center">
@@ -11,7 +11,7 @@
 <a href="https://github.com/stelynx/craft"><img src="https://img.shields.io/github/stars/stelynx/craft.svg?style=flat&logo=github&colorB=fbae17&label=stars" alt="Star on Github"></a>
 <a href="https://github.com/kaminomobile/kamino_flutter_lints"><img src="https://img.shields.io/badge/style-kamino-000000.svg" alt="style: kamino flutter lints"></a>
 <a href="LICENSE"><img src="https://img.shields.io/github/license/stelynx/craft?color=purple" alt="License: GPL-3.0"></a>
-<a href="http://craftlib.com"><img src="https://img.shields.io/badge/website-craftlib.com-fbae17" alt="Bloc Library"></a>
+<a href="https://craftlib.com"><img src="https://img.shields.io/badge/website-craftlib.com-fbae17" alt="Bloc Library"></a>
 </p>
 
 Simple and intuitive HTTP clients (**craft**s) that support OAuth token auto-refresh, queueing and serialization of requests, storing requests locally for offline support ...
