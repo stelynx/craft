@@ -25,7 +25,7 @@ jobs:
       - name: Setup Pub Credentials
         env:
           PUB_DEV_CREDENTIALS_JSON: ${{ secrets.PUB_DEV_CREDENTIALS_JSON }}
-        run: echo "$PUB_DEV_CREDENTIALS_JSON" | base64 --decode > $XDG_CONFIG_HOME/dart/pub-credentials.json
+        run: echo "$PUB_DEV_CREDENTIALS_JSON" | base64 --decode > $PUB_CACHE/credentials.json
 
       - name: Check Publish Warnings
         run: flutter pub publish --dry-run
