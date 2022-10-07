@@ -51,6 +51,6 @@ class BaseCraft {
   Object? serializeBody<T>(T? body) {
     if (body is! Serializable) return body;
 
-    return body.toJson();
+    return jsonEncode(body.toJson());
   }
 }

@@ -48,16 +48,6 @@ mixin AutoRefreshing on Refreshable {
     _refreshTimer = Timer(_tokenExpiration(tokens.access), refreshTokens);
     super.setTokens(tokens);
   }
-
-  /// {@macro craft.refreshable.refresh_token}
-  ///
-  /// Additionally, it sets the [refreshTimer] to automatically refresh the
-  /// [accessToken] when it expires.
-  @override
-  Future<void> refreshTokens() async {
-    await super.refreshTokens();
-    _refreshTimer = Timer(_tokenExpiration(_accessToken), refreshTokens);
-  }
 }
 
 /// [RefreshableTokenOauthCraft] with ability to automatically refresh

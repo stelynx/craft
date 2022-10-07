@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:craft/craft.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart' as http;
@@ -59,15 +61,14 @@ void main() {
       },
     );
 
-    test('should return json if body conforms to Serializable', () {
+    test('should return String json if body conforms to Serializable', () {
       final BaseCraft craft = BaseCraft();
 
       const SerializableBody body = SerializableBody('bar');
 
-      expect(craft.serializeBody(body), isA<Json>());
       expect(
         craft.serializeBody(body),
-        equals(<String, dynamic>{'foo': 'bar'}),
+        equals(jsonEncode(<String, dynamic>{'foo': 'bar'})),
       );
     });
   });
