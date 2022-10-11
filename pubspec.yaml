@@ -1,6 +1,7 @@
 name: craft
-description: Provides Oauth clients with token auto-refresh support, queueing requests, offline support
-version: 0.1.0
+description: Provides Oauth clients with token auto-refresh support, queueing
+  requests, offline support
+version: 0.2.0
 homepage: https://craftlib.com
 repository: https://github.com/stelynx/craft
 environment:
@@ -13,6 +14,7 @@ dependencies:
   hive: ^2.2.3
   http: ^0.13.5
   meta: ^1.8.0
+  synchronized: ^3.0.0+3
 
 dev_dependencies:
   flutter_test:

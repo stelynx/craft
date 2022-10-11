@@ -32,9 +32,7 @@ abstract class OauthCraft extends BaseCraft {
   /// {@template craft.oauth_craft.authorization_header_value}
   /// A value to be used as 'Authorization' header value.
   /// {@endtemplate}
-  String get authorizationHeaderValue => throw UnsupportedError(
-        'Extend this class and provide custom implementation',
-      );
+  String get authorizationHeaderValue;
 
   /// Adds authorization header to the request headers.
   @mustCallSuper
