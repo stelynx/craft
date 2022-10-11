@@ -111,6 +111,99 @@ void main() {
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
     });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QTokenOauthCraft craft = QTokenOauthCraft(
+          accessToken: tokens.access,
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QTokenOauthCraft craft = QTokenOauthCraft(
+          accessToken: tokens.access,
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QTokenOauthCraft craft = QTokenOauthCraft(
+          accessToken: tokens.access,
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QTokenOauthCraft craft = QTokenOauthCraft(
+          accessToken: tokens.access,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QTokenOauthCraft craft = QTokenOauthCraft(
+          accessToken: tokens.access,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
+    });
   });
 
   group('QBearerOauthCraft', () {
@@ -208,6 +301,99 @@ void main() {
 
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
+    });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QBearerOauthCraft craft = QBearerOauthCraft(
+          accessToken: tokens.access,
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QBearerOauthCraft craft = QBearerOauthCraft(
+          accessToken: tokens.access,
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QBearerOauthCraft craft = QBearerOauthCraft(
+          accessToken: tokens.access,
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QBearerOauthCraft craft = QBearerOauthCraft(
+          accessToken: tokens.access,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QBearerOauthCraft craft = QBearerOauthCraft(
+          accessToken: tokens.access,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
     });
   });
 
@@ -313,6 +499,104 @@ void main() {
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
     });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QRefreshableTokenOauthCraft craft = QRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QRefreshableTokenOauthCraft craft = QRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QRefreshableTokenOauthCraft craft = QRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QRefreshableTokenOauthCraft craft = QRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QRefreshableTokenOauthCraft craft = QRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
+    });
   });
 
   group('QRefreshableBearerOauthCraft', () {
@@ -416,6 +700,104 @@ void main() {
 
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
+    });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QRefreshableBearerOauthCraft craft = QRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QRefreshableBearerOauthCraft craft = QRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QRefreshableBearerOauthCraft craft = QRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QRefreshableBearerOauthCraft craft = QRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QRefreshableBearerOauthCraft craft = QRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
     });
   });
 
@@ -527,6 +909,114 @@ void main() {
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
     });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QAutoRefreshingTokenOauthCraft craft =
+            QAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QAutoRefreshingTokenOauthCraft craft =
+            QAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QAutoRefreshingTokenOauthCraft craft =
+            QAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QAutoRefreshingTokenOauthCraft craft =
+            QAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QAutoRefreshingTokenOauthCraft craft =
+            QAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
+    });
   });
 
   group('QAutoRefreshingBearerOauthCraft', () {
@@ -637,6 +1127,114 @@ void main() {
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
     });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QAutoRefreshingBearerOauthCraft craft =
+            QAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QAutoRefreshingBearerOauthCraft craft =
+            QAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QAutoRefreshingBearerOauthCraft craft =
+            QAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QAutoRefreshingBearerOauthCraft craft =
+            QAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QAutoRefreshingBearerOauthCraft craft =
+            QAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
+    });
   });
 
   group('QPersistableTokenOauthCraft', () {
@@ -741,6 +1339,104 @@ void main() {
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
     });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QPersistableTokenOauthCraft craft = QPersistableTokenOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableTokenOauthCraft craft = QPersistableTokenOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableTokenOauthCraft craft = QPersistableTokenOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableTokenOauthCraft craft = QPersistableTokenOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableTokenOauthCraft craft = QPersistableTokenOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
+    });
   });
 
   group('QPersistableBearerOauthCraft', () {
@@ -844,6 +1540,104 @@ void main() {
 
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
+    });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QPersistableBearerOauthCraft craft = QPersistableBearerOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableBearerOauthCraft craft = QPersistableBearerOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableBearerOauthCraft craft = QPersistableBearerOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableBearerOauthCraft craft = QPersistableBearerOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableBearerOauthCraft craft = QPersistableBearerOauthCraft(
+          accessToken: tokens.access,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
     });
   });
 
@@ -955,6 +1749,114 @@ void main() {
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
     });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QPersistableRefreshableTokenOauthCraft craft =
+            QPersistableRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableRefreshableTokenOauthCraft craft =
+            QPersistableRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableRefreshableTokenOauthCraft craft =
+            QPersistableRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableRefreshableTokenOauthCraft craft =
+            QPersistableRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableRefreshableTokenOauthCraft craft =
+            QPersistableRefreshableTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
+    });
   });
 
   group('QPersistableRefreshableBearerOauthCraft', () {
@@ -1064,6 +1966,114 @@ void main() {
 
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
+    });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QPersistableRefreshableBearerOauthCraft craft =
+            QPersistableRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableRefreshableBearerOauthCraft craft =
+            QPersistableRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableRefreshableBearerOauthCraft craft =
+            QPersistableRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableRefreshableBearerOauthCraft craft =
+            QPersistableRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableRefreshableBearerOauthCraft craft =
+            QPersistableRefreshableBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
     });
   });
 
@@ -1179,6 +2189,119 @@ void main() {
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
     });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QPersistableAutoRefreshingTokenOauthCraft craft =
+            QPersistableAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableAutoRefreshingTokenOauthCraft craft =
+            QPersistableAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableAutoRefreshingTokenOauthCraft craft =
+            QPersistableAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableAutoRefreshingTokenOauthCraft craft =
+            QPersistableAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableAutoRefreshingTokenOauthCraft craft =
+            QPersistableAutoRefreshingTokenOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
+    });
   });
 
   group('QPersistableAutoRefreshingBearerOauthCraft', () {
@@ -1292,6 +2415,119 @@ void main() {
 
       expect(firstRequestComplete, isTrue);
       expect(secondRequestComplete, isTrue);
+    });
+
+    group('close', () {
+      test('should close the requestStreamController', () {
+        final QPersistableAutoRefreshingBearerOauthCraft craft =
+            QPersistableAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+        )..close();
+
+        expect(craft.requestStreamController.isClosed, isTrue);
+      });
+    });
+
+    group('locked', () {
+      test('should return false if no request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableAutoRefreshingBearerOauthCraft craft =
+            QPersistableAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        expect(craft.locked, isFalse);
+
+        await craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isFalse);
+      });
+
+      test('should return true when request is being processed', () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableAutoRefreshingBearerOauthCraft craft =
+            QPersistableAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        when(mockClient.get(any, headers: anyNamed('headers'))).thenAnswer(
+          (_) => Future<http.Response>.delayed(
+            const Duration(seconds: 2),
+            () => http.Response('', HttpStatus.ok),
+          ),
+        );
+
+        craft.send(
+          Request<void>(HttpMethod.get, Uri.parse('https://google.com')),
+        );
+
+        expect(craft.locked, isTrue);
+      });
+    });
+
+    group('requestInProcessStream', () {
+      test('should stream the request being processed under the lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableAutoRefreshingBearerOauthCraft craft =
+            QPersistableAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(Duration.zero, () => craft.send(request));
+        expect(
+          craft.requestInProcessStream,
+          emitsInOrder(<Request<void>>[request]),
+        );
+      });
+
+      test('should not stream the request being processed by bypassing lock',
+          () async {
+        final MockHttpClient mockClient = MockHttpClient();
+        final QPersistableAutoRefreshingBearerOauthCraft craft =
+            QPersistableAutoRefreshingBearerOauthCraft(
+          tokens: tokens,
+          refreshTokenMethod: unimplementedRefreshTokenMethod,
+          tokenExpiration: infiniteTokenExpiration,
+          tokenStorageKey: '',
+          client: mockClient,
+        );
+
+        final Request<void> request =
+            Request<void>(HttpMethod.get, Uri.parse('https://google.com'));
+
+        Future<void>.delayed(
+          Duration.zero,
+          () async {
+            await craft.send(request, lock: false);
+            craft.close();
+          },
+        );
+        expect(
+          craft.requestInProcessStream,
+          neverEmits(request),
+        );
+      });
     });
   });
 }

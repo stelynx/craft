@@ -19,25 +19,6 @@ part 'persistable.dart';
 part 'refreshable.dart';
 part 'request_queueing.dart';
 
-/// [OauthCraft] with ability to refresh [accessToken] using
-/// [refreshTokens] method from [Refreshable].
-abstract class RefreshableOauthCraft extends OauthCraft with Refreshable {
-  /// Creates new instance of [RefreshableOauthCraft] with [tokens] pair
-  /// and a [refreshTokenMethod]. An underlying [client] can also be provided.
-  ///
-  /// {@macro craft.refreshable.init}
-  RefreshableOauthCraft({
-    required TokenPair tokens,
-    required Future<TokenPair> Function(String) refreshTokenMethod,
-    super.client,
-  }) : super(accessToken: tokens.access) {
-    _initRefreshable(
-      refreshToken: tokens.refresh,
-      refreshTokenMethod: refreshTokenMethod,
-    );
-  }
-}
-
 /// [TokenOauthCraft] with ability to refresh [accessToken] using
 /// [refreshTokens] method from [Refreshable].
 class RefreshableTokenOauthCraft extends TokenOauthCraft with Refreshable {
@@ -73,28 +54,6 @@ class RefreshableBearerOauthCraft extends BearerOauthCraft with Refreshable {
       refreshToken: tokens.refresh,
       refreshTokenMethod: refreshTokenMethod,
     );
-  }
-}
-
-/// [RefreshableOauthCraft] with ability to automatically refresh [accessToken]
-/// and [refreshToken] using [refreshTokens] method from
-/// [AutoRefreshing].
-abstract class AutoRefreshingOauthCraft extends RefreshableOauthCraft
-    with AutoRefreshing {
-  /// Creates new instance of [AutoRefreshingTokenOauthCraft] with [tokens]
-  /// pair, a required [refreshTokenMethod], and a required [tokenExpiration]
-  /// method. Underlying [client] can also be provided.
-  ///
-  /// {@macro craft.refreshable.init}
-  ///
-  /// {@macro craft.auto_refreshing.token_expiration}
-  AutoRefreshingOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required Duration Function(String) tokenExpiration,
-    super.client,
-  }) {
-    _initAutoRefreshing(tokenExpiration: tokenExpiration);
   }
 }
 
@@ -142,27 +101,6 @@ class AutoRefreshingBearerOauthCraft extends RefreshableBearerOauthCraft
   }
 }
 
-/// [OauthCraft] that persists access token using [AccessTokenPersistable].
-abstract class PersistableOauthCraft extends OauthCraft
-    with Persistable, AccessTokenPersistable {
-  /// Creates new [PersistableTokenOauthCraft] instance with [accessToken] and
-  /// [tokenStorageKey] (used as key for storing [accessToken] in a secure
-  /// storage).
-  ///
-  /// Automatically stores [accessToken] to secure storage.
-  PersistableOauthCraft({
-    required super.accessToken,
-    String? tokenStorageKey,
-    TokenStorage? tokenStorage,
-    super.client,
-  }) {
-    _initPersistable(
-      tokenStorageKey: tokenStorageKey,
-      tokenStorage: tokenStorage,
-    );
-  }
-}
-
 /// [TokenOauthCraft] that persists access token using [AccessTokenPersistable].
 class PersistableTokenOauthCraft extends TokenOauthCraft
     with Persistable, AccessTokenPersistable {
@@ -205,26 +143,6 @@ class PersistableBearerOauthCraft extends BearerOauthCraft
   }
 }
 
-/// [RefreshableOauthCraft] that persists refresh token using
-/// [RefreshTokenPersistable].
-abstract class PersistableRefreshableOauthCraft extends RefreshableOauthCraft
-    with Persistable, RefreshTokenPersistable {
-  /// Creates new [PersistableRefreshableOauthCraft] instance. Refresh token is
-  /// automatically persisted.
-  PersistableRefreshableOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    String? tokenStorageKey,
-    TokenStorage? tokenStorage,
-    super.client,
-  }) {
-    _initPersistable(
-      tokenStorageKey: tokenStorageKey,
-      tokenStorage: tokenStorage,
-    );
-  }
-}
-
 /// [RefreshableTokenOauthCraft] that persists refresh token using
 /// [RefreshTokenPersistable].
 class PersistableRefreshableTokenOauthCraft extends RefreshableTokenOauthCraft
@@ -254,27 +172,6 @@ class PersistableRefreshableBearerOauthCraft extends RefreshableBearerOauthCraft
   PersistableRefreshableBearerOauthCraft({
     required super.tokens,
     required super.refreshTokenMethod,
-    String? tokenStorageKey,
-    TokenStorage? tokenStorage,
-    super.client,
-  }) {
-    _initPersistable(
-      tokenStorageKey: tokenStorageKey,
-      tokenStorage: tokenStorage,
-    );
-  }
-}
-
-/// [AutoRefreshingOauthCraft] that persists refresh token using
-/// [RefreshTokenPersistable].
-abstract class PersistableAutoRefreshingOauthCraft
-    extends AutoRefreshingOauthCraft with Persistable, RefreshTokenPersistable {
-  /// Creates new [PersistableAutoRefreshingTokenOauthCraft] instance.
-  /// Refresh token is automatically persisted.
-  PersistableAutoRefreshingOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required super.tokenExpiration,
     String? tokenStorageKey,
     TokenStorage? tokenStorage,
     super.client,
@@ -330,12 +227,6 @@ class PersistableAutoRefreshingBearerOauthCraft
   }
 }
 
-/// A [OauthCraft] with ability of queueing requests using [RequestQueueing].
-abstract class QOauthCraft extends OauthCraft with RequestQueueing {
-  /// Creates new [QOauthCraft] instance with [accessToken] and [client].
-  QOauthCraft({required super.accessToken, super.client});
-}
-
 /// A [TokenOauthCraft] with ability of queueing requests using
 /// [RequestQueueing].
 class QTokenOauthCraft extends TokenOauthCraft with RequestQueueing {
@@ -348,19 +239,6 @@ class QTokenOauthCraft extends TokenOauthCraft with RequestQueueing {
 class QBearerOauthCraft extends BearerOauthCraft with RequestQueueing {
   /// Creates new [QBearerOauthCraft] instance with [accessToken] and [client].
   QBearerOauthCraft({required super.accessToken, super.client});
-}
-
-/// A [RefreshableOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-abstract class QRefreshableOauthCraft extends RefreshableOauthCraft
-    with RequestQueueing {
-  /// Creates new [QRefreshableTokenOauthCraft] instance with tokens,
-  /// a refresh token method, and a [client].
-  QRefreshableOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    super.client,
-  });
 }
 
 /// A [RefreshableTokenOauthCraft] with ability of queueing requests using
@@ -385,20 +263,6 @@ class QRefreshableBearerOauthCraft extends RefreshableBearerOauthCraft
   QRefreshableBearerOauthCraft({
     required super.tokens,
     required super.refreshTokenMethod,
-    super.client,
-  });
-}
-
-/// An [AutoRefreshingOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-abstract class QAutoRefreshingOauthCraft extends AutoRefreshingOauthCraft
-    with RequestQueueing {
-  /// Creates new [QAutoRefreshingOauthCraft] instance with tokens,
-  /// a refresh token method, a token expiration method, and a [client].
-  QAutoRefreshingOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required super.tokenExpiration,
     super.client,
   });
 }
@@ -431,20 +295,6 @@ class QAutoRefreshingBearerOauthCraft extends AutoRefreshingBearerOauthCraft
   });
 }
 
-/// A [PersistableOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-abstract class QPersistableOauthCraft extends PersistableOauthCraft
-    with RequestQueueing {
-  /// Creates new [QPersistableOauthCraft] instance with [accessToken],
-  /// desired token storage key or token storage, and a [client].
-  QPersistableOauthCraft({
-    required super.accessToken,
-    super.tokenStorageKey,
-    super.tokenStorage,
-    super.client,
-  });
-}
-
 /// A [PersistableTokenOauthCraft] with ability of queueing requests using
 /// [RequestQueueing].
 class QPersistableTokenOauthCraft extends PersistableTokenOauthCraft
@@ -467,22 +317,6 @@ class QPersistableBearerOauthCraft extends PersistableBearerOauthCraft
   /// desired token storage key or token storage, and a [client].
   QPersistableBearerOauthCraft({
     required super.accessToken,
-    super.tokenStorageKey,
-    super.tokenStorage,
-    super.client,
-  });
-}
-
-/// A [PersistableRefreshableOauthCraft] with ability of queueing requests
-/// using [RequestQueueing].
-abstract class QPersistableRefreshableOauthCraft
-    extends PersistableRefreshableOauthCraft with RequestQueueing {
-  /// Creates new [QPersistableRefreshableOauthCraft] instance with tokens pair,
-  /// a refresh token method, desired token storage key or token
-  /// storage, and a [client].
-  QPersistableRefreshableOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
     super.tokenStorageKey,
     super.tokenStorage,
     super.client,
@@ -515,23 +349,6 @@ class QPersistableRefreshableBearerOauthCraft
   QPersistableRefreshableBearerOauthCraft({
     required super.tokens,
     required super.refreshTokenMethod,
-    super.tokenStorageKey,
-    super.tokenStorage,
-    super.client,
-  });
-}
-
-/// A [PersistableAutoRefreshingOauthCraft] with ability of queueing requests
-/// using [RequestQueueing].
-abstract class QPersistableAutoRefreshingOauthCraft
-    extends PersistableAutoRefreshingOauthCraft with RequestQueueing {
-  /// Creates new [QPersistableAutoRefreshingOauthCraft] instance with tokens
-  /// pair, a refresh token method, token expiration method, desired token
-  /// storage key or token storage, and a [client].
-  QPersistableAutoRefreshingOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required super.tokenExpiration,
     super.tokenStorageKey,
     super.tokenStorage,
     super.client,

@@ -102,6 +102,16 @@ void main() {
 
       verify(mockTokenStorage.saveToken(newTokens.access)).called(1);
     });
+
+    test('should call TokenStorage.deleteToken on token deletion', () {
+      final TokenStorage mockTokenStorage = MockTokenStorage();
+      PersistableTokenOauthCraft(
+        accessToken: tokens.access,
+        tokenStorage: mockTokenStorage,
+      ).deleteSavedToken();
+
+      verify(mockTokenStorage.deleteToken()).called(1);
+    });
   });
 
   group('PersistableBearerOauthCraft', () {
@@ -189,6 +199,16 @@ void main() {
       ).accessToken = newTokens.access;
 
       verify(mockTokenStorage.saveToken(newTokens.access)).called(1);
+    });
+
+    test('should call TokenStorage.deleteToken on token deletion', () {
+      final TokenStorage mockTokenStorage = MockTokenStorage();
+      PersistableBearerOauthCraft(
+        accessToken: tokens.access,
+        tokenStorage: mockTokenStorage,
+      ).deleteSavedToken();
+
+      verify(mockTokenStorage.deleteToken()).called(1);
     });
   });
 
@@ -305,6 +325,17 @@ void main() {
 
       verify(mockTokenStorage.saveToken(newTokens.refresh)).called(1);
     });
+
+    test('should call TokenStorage.deleteToken on token deletion', () {
+      final TokenStorage mockTokenStorage = MockTokenStorage();
+      PersistableRefreshableTokenOauthCraft(
+        tokens: tokens,
+        refreshTokenMethod: unimplementedRefreshTokenMethod,
+        tokenStorage: mockTokenStorage,
+      ).deleteSavedToken();
+
+      verify(mockTokenStorage.deleteToken()).called(1);
+    });
   });
 
   group('PersistableRefreshableBearerOauthCraft', () {
@@ -419,6 +450,17 @@ void main() {
       ).refreshTokens();
 
       verify(mockTokenStorage.saveToken(newTokens.refresh)).called(1);
+    });
+
+    test('should call TokenStorage.deleteToken on token deletion', () {
+      final TokenStorage mockTokenStorage = MockTokenStorage();
+      PersistableRefreshableBearerOauthCraft(
+        tokens: tokens,
+        refreshTokenMethod: unimplementedRefreshTokenMethod,
+        tokenStorage: mockTokenStorage,
+      ).deleteSavedToken();
+
+      verify(mockTokenStorage.deleteToken()).called(1);
     });
   });
 
@@ -568,6 +610,18 @@ void main() {
         );
       },
     );
+
+    test('should call TokenStorage.deleteToken on token deletion', () {
+      final TokenStorage mockTokenStorage = MockTokenStorage();
+      PersistableAutoRefreshingTokenOauthCraft(
+        tokens: tokens,
+        refreshTokenMethod: unimplementedRefreshTokenMethod,
+        tokenExpiration: infiniteTokenExpiration,
+        tokenStorage: mockTokenStorage,
+      ).deleteSavedToken();
+
+      verify(mockTokenStorage.deleteToken()).called(1);
+    });
   });
 
   group('PersistableAutoRefreshingBearerOauthCraft', () {
@@ -716,5 +770,17 @@ void main() {
         );
       },
     );
+
+    test('should call TokenStorage.deleteToken on token deletion', () {
+      final TokenStorage mockTokenStorage = MockTokenStorage();
+      PersistableAutoRefreshingBearerOauthCraft(
+        tokens: tokens,
+        refreshTokenMethod: unimplementedRefreshTokenMethod,
+        tokenExpiration: infiniteTokenExpiration,
+        tokenStorage: mockTokenStorage,
+      ).deleteSavedToken();
+
+      verify(mockTokenStorage.deleteToken()).called(1);
+    });
   });
 }
