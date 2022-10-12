@@ -16,6 +16,60 @@ void main() {
   Duration infiniteTokenExpiration(_) => const Duration(days: 10000);
   Duration tokenExpiration(_) => Duration.zero;
 
+  group('getSavedToken', () {
+    test(
+      // ignore: lines_longer_than_80_chars
+      'should throw AssertionError if called with tokenStorageKey and tokenStorage',
+      () {
+        expect(
+          () => Persistable.getSavedToken(
+            tokenStorageKey: '',
+            tokenStorage: MockTokenStorage(),
+          ),
+          throwsA(isA<AssertionError>()),
+        );
+      },
+    );
+
+    test(
+      // ignore: lines_longer_than_80_chars
+      'should throw AssertionError if called without tokenStorageKey and tokenStorage',
+      () {
+        expect(
+          () => Persistable.getSavedToken(),
+          throwsA(isA<AssertionError>()),
+        );
+      },
+    );
+
+    test('should call TokenStorage.getToken', () {
+      final MockTokenStorage mockTokenStorage = MockTokenStorage();
+
+      Persistable.getSavedToken(tokenStorage: mockTokenStorage);
+      verify(mockTokenStorage.getToken()).called(1);
+    });
+
+    test('should return a saved token if exists', () {
+      final MockTokenStorage mockTokenStorage = MockTokenStorage();
+      when(mockTokenStorage.getToken()).thenReturn(tokens.refresh);
+
+      expect(
+        Persistable.getSavedToken(tokenStorage: mockTokenStorage),
+        equals(tokens.refresh),
+      );
+    });
+
+    test('should return null if saved token does not exist', () {
+      final MockTokenStorage mockTokenStorage = MockTokenStorage();
+      when(mockTokenStorage.getToken()).thenReturn(null);
+
+      expect(
+        Persistable.getSavedToken(tokenStorage: mockTokenStorage),
+        isNull,
+      );
+    });
+  });
+
   group('PersistableTokenOauthCraft', () {
     test('should extend TokenOauthCraft with AccessTokenPersistable', () {
       final OauthCraft craft = PersistableTokenOauthCraft(

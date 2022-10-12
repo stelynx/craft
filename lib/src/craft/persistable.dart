@@ -47,7 +47,8 @@ mixin Persistable {
   }
 
   /// Provides method for obtaining saved token before the object creation.
-  static FutureOr<String?> _getSavedToken({
+  @visibleForTesting
+  static FutureOr<String?> getSavedToken({
     String? tokenStorageKey,
     TokenStorage? tokenStorage,
   }) {

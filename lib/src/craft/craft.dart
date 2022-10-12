@@ -94,16 +94,20 @@ class Craft<T extends BaseCraft> {
       client: client,
     );
 
-    try {
-      await craft.promote(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        refreshTokenMethod: refreshTokenMethod,
-        tokenExpiration: tokenExpiration,
-        tokenStorageKey: tokenStorageKey,
-        tokenStorage: tokenStorage,
-      );
-    } on PersistableCreationError catch (_) {}
+    if (T == BaseCraft || T == QBaseCraft) {
+      craft._promoted = true;
+    } else {
+      try {
+        await craft.promote(
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          refreshTokenMethod: refreshTokenMethod,
+          tokenExpiration: tokenExpiration,
+          tokenStorageKey: tokenStorageKey,
+          tokenStorage: tokenStorage,
+        );
+      } catch (_) {}
+    }
 
     return craft;
   }
@@ -220,11 +224,11 @@ class Craft<T extends BaseCraft> {
           break;
         case PersistableTokenOauthCraft:
           final String? token = accessToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
           _craftInstance = PersistableTokenOauthCraft(
             accessToken: token,
             tokenStorageKey: tokenStorageKey,
@@ -234,11 +238,11 @@ class Craft<T extends BaseCraft> {
           break;
         case PersistableBearerOauthCraft:
           final String? token = accessToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
           _craftInstance = PersistableBearerOauthCraft(
             accessToken: token,
             tokenStorageKey: tokenStorageKey,
@@ -252,11 +256,11 @@ class Craft<T extends BaseCraft> {
           }
 
           final String? token = refreshToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
 
           final TokenPair tokens;
           if (accessToken == null) {
@@ -279,11 +283,11 @@ class Craft<T extends BaseCraft> {
           }
 
           final String? token = refreshToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
 
           final TokenPair tokens;
           if (accessToken == null) {
@@ -309,11 +313,11 @@ class Craft<T extends BaseCraft> {
           }
 
           final String? token = refreshToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
 
           final TokenPair tokens;
           if (accessToken == null) {
@@ -339,11 +343,11 @@ class Craft<T extends BaseCraft> {
           }
 
           final String? token = refreshToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
 
           final TokenPair tokens;
           if (accessToken == null) {
@@ -462,11 +466,11 @@ class Craft<T extends BaseCraft> {
           break;
         case QPersistableTokenOauthCraft:
           final String? token = accessToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
           _craftInstance = QPersistableTokenOauthCraft(
             accessToken: token,
             tokenStorageKey: tokenStorageKey,
@@ -476,11 +480,11 @@ class Craft<T extends BaseCraft> {
           break;
         case QPersistableBearerOauthCraft:
           final String? token = accessToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
           _craftInstance = QPersistableBearerOauthCraft(
             accessToken: token,
             tokenStorageKey: tokenStorageKey,
@@ -494,11 +498,11 @@ class Craft<T extends BaseCraft> {
           }
 
           final String? token = refreshToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
 
           final TokenPair tokens;
           if (accessToken == null) {
@@ -521,11 +525,11 @@ class Craft<T extends BaseCraft> {
           }
 
           final String? token = refreshToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
 
           final TokenPair tokens;
           if (accessToken == null) {
@@ -551,11 +555,11 @@ class Craft<T extends BaseCraft> {
           }
 
           final String? token = refreshToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
 
           final TokenPair tokens;
           if (accessToken == null) {
@@ -581,11 +585,11 @@ class Craft<T extends BaseCraft> {
           }
 
           final String? token = refreshToken ??
-              await Persistable._getSavedToken(
+              await Persistable.getSavedToken(
                 tokenStorageKey: tokenStorageKey,
                 tokenStorage: tokenStorage,
               );
-          if (token == null) throw PersistableCreationError();
+          if (token == null) throw PersistableAutoPromotionError();
 
           final TokenPair tokens;
           if (accessToken == null) {
@@ -616,8 +620,8 @@ class Craft<T extends BaseCraft> {
   }
 }
 
-/// Error denoting failed creation of a Persistable variant.
-class PersistableCreationError extends Error {
+/// Error denoting failed promotion to a Persistable variant at craft brewing.
+class PersistableAutoPromotionError extends Error {
   @override
   String toString() {
     return 'Token was not provided and could also not be obtained from storage';
