@@ -46,6 +46,22 @@ mixin Persistable {
     persist();
   }
 
+  /// Provides method for obtaining saved token before the object creation.
+  static FutureOr<String?> _getSavedToken({
+    String? tokenStorageKey,
+    TokenStorage? tokenStorage,
+  }) {
+    assert(
+      (tokenStorageKey != null && tokenStorage == null) ||
+          (tokenStorageKey == null && tokenStorage != null),
+      'Provide either tokenStorageKey or tokenStorage',
+    );
+
+    final TokenStorage ts = tokenStorage ??
+        FlutterSecureTokenStorage(tokenStorageKey: tokenStorageKey!);
+    return ts.getToken();
+  }
+
   /// Saves [tokenToPersist] to [tokenStorage].
   @mustCallSuper
   FutureOr<void> persist() {

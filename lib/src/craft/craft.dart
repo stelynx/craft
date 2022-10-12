@@ -14,377 +14,612 @@ import '../utils/token_storage.dart';
 
 part 'auto_refreshing.dart';
 part 'base_craft.dart';
+part 'craft_impl.dart';
 part 'oauth_craft.dart';
 part 'persistable.dart';
 part 'refreshable.dart';
 part 'request_queueing.dart';
 
-/// [TokenOauthCraft] with ability to refresh [accessToken] using
-/// [refreshTokens] method from [Refreshable].
-class RefreshableTokenOauthCraft extends TokenOauthCraft with Refreshable {
-  /// Creates new instance of [RefreshableTokenOauthCraft] with [tokens] pair
-  /// and a [refreshTokenMethod]. An underlying [client] can also be provided.
-  ///
-  /// {@macro craft.refreshable.init}
-  RefreshableTokenOauthCraft({
-    required TokenPair tokens,
-    required Future<TokenPair> Function(String) refreshTokenMethod,
-    super.client,
-  }) : super(accessToken: tokens.access) {
-    _initRefreshable(
-      refreshToken: tokens.refresh,
-      refreshTokenMethod: refreshTokenMethod,
-    );
-  }
-}
+/// A [Craft] is an HTTP client. It can be just a basic client, but is meant to
+/// be used as an enhanced feature-rich client that provides commonly used
+/// abilities - such as OAuth token auto-refresh, persisting token in a secure
+/// storage and automatically retrieving it when being created, queueing of the
+/// HTTP requests - out of the box.
+///
+/// This class is a utility class and is meant to be used instead of the actual
+/// craft implementations, although those can also be used.
+///
+/// The options for type [T] are [BaseCraft], [TokenOauthCraft],
+/// [BearerOauthCraft], [RefreshableTokenOauthCraft],
+/// [RefreshableBearerOauthCraft], [AutoRefreshingTokenOauthCraft],
+/// [AutoRefreshingBearerOauthCraft], [PersistableTokenOauthCraft],
+/// [PersistableBearerOauthCraft], [PersistableRefreshableTokenOauthCraft],
+/// [PersistableRefreshableBearerOauthCraft],
+/// [PersistableAutoRefreshingTokenOauthCraft],
+/// [PersistableAutoRefreshingBearerOauthCraft], and request queueing variants
+/// [QBaseCraft], [QTokenOauthCraft],
+/// [QBearerOauthCraft], [QRefreshableTokenOauthCraft],
+/// [QRefreshableBearerOauthCraft], [QAutoRefreshingTokenOauthCraft],
+/// [QAutoRefreshingBearerOauthCraft], [QPersistableTokenOauthCraft],
+/// [QPersistableBearerOauthCraft], [QPersistableRefreshableTokenOauthCraft],
+/// [QPersistableRefreshableBearerOauthCraft],
+/// [QPersistableAutoRefreshingTokenOauthCraft],
+/// [QPersistableAutoRefreshingBearerOauthCraft],
+class Craft<T extends BaseCraft> {
+  /// {@template craft.craft.craft_instance}
+  /// The underlying craft.
+  /// {@endtemplate}
+  BaseCraft _craftInstance;
 
-/// [BearerOauthCraft] with ability to refresh [accessToken] using
-/// [refreshTokens] method from [Refreshable].
-class RefreshableBearerOauthCraft extends BearerOauthCraft with Refreshable {
-  /// Creates new instance of [RefreshableBearerOauthCraft] with [tokens] pair
-  /// and a [refreshTokenMethod]. An underlying [client] can also be provided.
+  /// {@macro craft.craft.craft_instance}
   ///
-  /// {@macro craft.refreshable.init}
-  RefreshableBearerOauthCraft({
-    required TokenPair tokens,
-    required Future<TokenPair> Function(String) refreshTokenMethod,
-    super.client,
-  }) : super(accessToken: tokens.access) {
-    _initRefreshable(
-      refreshToken: tokens.refresh,
-      refreshTokenMethod: refreshTokenMethod,
-    );
-  }
-}
+  /// {@macro craft.visible_for_testing}
+  @visibleForTesting
+  BaseCraft get craftInstance => _craftInstance;
 
-/// [RefreshableTokenOauthCraft] with ability to automatically refresh
-/// [accessToken] and [refreshToken] using [refreshTokens] method from
-/// [AutoRefreshing].
-class AutoRefreshingTokenOauthCraft extends RefreshableTokenOauthCraft
-    with AutoRefreshing {
-  /// Creates new instance of [AutoRefreshingTokenOauthCraft] with [tokens]
-  /// pair, a required [refreshTokenMethod], and a required [tokenExpiration]
-  /// method. Underlying [client] can also be provided.
+  /// {@macro craft.craft.craft_instance}
   ///
-  /// {@macro craft.refreshable.init}
-  ///
-  /// {@macro craft.auto_refreshing.token_expiration}
-  AutoRefreshingTokenOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required Duration Function(String) tokenExpiration,
-    super.client,
-  }) {
-    _initAutoRefreshing(tokenExpiration: tokenExpiration);
-  }
-}
+  /// Current craft in use. If object of type [T] could not be created at
+  /// initialization and has not been [promote]d, the error is thrown.
+  T get instance => _craftInstance as T;
 
-/// [RefreshableBearerOauthCraft] with ability to automatically refresh
-/// [accessToken] and [refreshToken] using [refreshTokens] method from
-/// [AutoRefreshing].
-class AutoRefreshingBearerOauthCraft extends RefreshableBearerOauthCraft
-    with AutoRefreshing {
-  /// Creates new instance of [AutoRefreshingBearerOauthCraft] with [tokens]
-  /// pair, a required [refreshTokenMethod], and a required [tokenExpiration]
-  /// method. Underlying [client] can also be provided.
-  ///
-  /// {@macro craft.refreshable.init}
-  ///
-  /// {@macro craft.auto_refreshing.token_expiration}
-  AutoRefreshingBearerOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required Duration Function(String) tokenExpiration,
-    super.client,
-  }) {
-    _initAutoRefreshing(tokenExpiration: tokenExpiration);
-  }
-}
+  /// {@template craft.craft.promoted}
+  /// Has the underlying craft been promoted or is still a [BaseCraft] or
+  /// [QBaseCraft].
+  /// {@endtemplate}
+  bool _promoted = false;
 
-/// [TokenOauthCraft] that persists access token using [AccessTokenPersistable].
-class PersistableTokenOauthCraft extends TokenOauthCraft
-    with Persistable, AccessTokenPersistable {
-  /// Creates new [PersistableTokenOauthCraft] instance with [accessToken] and
-  /// [tokenStorageKey] (used as key for storing [accessToken] in a secure
-  /// storage).
-  ///
-  /// Automatically stores [accessToken] to secure storage.
-  PersistableTokenOauthCraft({
-    required super.accessToken,
+  /// {@macro craft.craft.promoted}
+  bool get promoted => _promoted;
+
+  Craft._({required bool enableQueueing, http.Client? client})
+      : _craftInstance = enableQueueing
+            ? QBaseCraft(client: client)
+            : BaseCraft(client: client);
+
+  /// Returns new [Craft] instance with a craft of type [T] if [promote] was
+  /// successful, otherwise either [BaseCraft] or [QBaseCraft] is used as craft,
+  /// depending on whether [T] has support for [RequestQueueing].
+  static Future<Craft<T>> brew<T extends BaseCraft>({
+    String? accessToken,
+    String? refreshToken,
+    Future<TokenPair> Function(String)? refreshTokenMethod,
+    Duration Function(String)? tokenExpiration,
     String? tokenStorageKey,
     TokenStorage? tokenStorage,
-    super.client,
-  }) {
-    _initPersistable(
-      tokenStorageKey: tokenStorageKey,
-      tokenStorage: tokenStorage,
+    http.Client? client,
+  }) async {
+    final Craft<T> craft = Craft<T>._(
+      enableQueueing: <T>[] is List<RequestQueueing>,
+      client: client,
     );
-  }
-}
 
-/// [TokenOauthCraft] that persists access token using [AccessTokenPersistable].
-class PersistableBearerOauthCraft extends BearerOauthCraft
-    with Persistable, AccessTokenPersistable {
-  /// Creates new [PersistableTokenOauthCraft] instance with [accessToken] and
-  /// [tokenStorageKey] (used as key for storing [accessToken] in a secure
-  /// storage).
+    try {
+      await craft.promote(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        refreshTokenMethod: refreshTokenMethod,
+        tokenExpiration: tokenExpiration,
+        tokenStorageKey: tokenStorageKey,
+        tokenStorage: tokenStorage,
+      );
+    } on PersistableCreationError catch (_) {}
+
+    return craft;
+  }
+
+  /// Promotes current [instance] to type [T]. Promotion is only possible when
+  /// [instance] is [BaseCraft], otherwise an [UnsupportedError] is thrown.
   ///
-  /// Automatically stores [accessToken] to secure storage.
-  PersistableBearerOauthCraft({
-    required super.accessToken,
+  /// Throws [ArgumentError] if required arguments for creating [T] are null.
+  /// Provided non-null values for arguments that [T] does not require are
+  /// ignored.
+  ///
+  /// If the [instance] has already been promoted, a [StateError] is thrown.
+  Future<void> promote({
+    String? accessToken,
+    String? refreshToken,
+    Future<TokenPair> Function(String)? refreshTokenMethod,
+    Duration Function(String)? tokenExpiration,
     String? tokenStorageKey,
     TokenStorage? tokenStorage,
-    super.client,
-  }) {
-    _initPersistable(
-      tokenStorageKey: tokenStorageKey,
-      tokenStorage: tokenStorage,
+  }) async {
+    if (_promoted) throw StateError('craft has already been promoted');
+
+    if (_craftInstance.runtimeType == BaseCraft) {
+      switch (T) {
+        case TokenOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          _craftInstance = TokenOauthCraft(
+            accessToken: accessToken,
+            client: _craftInstance._client,
+          );
+          break;
+        case BearerOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          _craftInstance = BearerOauthCraft(
+            accessToken: accessToken,
+            client: _craftInstance._client,
+          );
+          break;
+        case RefreshableTokenOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          if (refreshToken == null) {
+            throw ArgumentError.notNull('refreshToken');
+          }
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          _craftInstance = RefreshableTokenOauthCraft(
+            tokens: TokenPair(accessToken, refreshToken),
+            refreshTokenMethod: refreshTokenMethod,
+            client: _craftInstance._client,
+          );
+          break;
+        case RefreshableBearerOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          if (refreshToken == null) {
+            throw ArgumentError.notNull('refreshToken');
+          }
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          _craftInstance = RefreshableBearerOauthCraft(
+            tokens: TokenPair(accessToken, refreshToken),
+            refreshTokenMethod: refreshTokenMethod,
+            client: _craftInstance._client,
+          );
+          break;
+        case AutoRefreshingTokenOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          if (refreshToken == null) {
+            throw ArgumentError.notNull('refreshToken');
+          }
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          if (tokenExpiration == null) {
+            throw ArgumentError.notNull('tokenExpiration');
+          }
+          _craftInstance = AutoRefreshingTokenOauthCraft(
+            tokens: TokenPair(accessToken, refreshToken),
+            refreshTokenMethod: refreshTokenMethod,
+            tokenExpiration: tokenExpiration,
+            client: _craftInstance._client,
+          );
+          break;
+        case AutoRefreshingBearerOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          if (refreshToken == null) {
+            throw ArgumentError.notNull('refreshToken');
+          }
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          if (tokenExpiration == null) {
+            throw ArgumentError.notNull('tokenExpiration');
+          }
+          _craftInstance = AutoRefreshingBearerOauthCraft(
+            tokens: TokenPair(accessToken, refreshToken),
+            refreshTokenMethod: refreshTokenMethod,
+            tokenExpiration: tokenExpiration,
+            client: _craftInstance._client,
+          );
+          break;
+        case PersistableTokenOauthCraft:
+          final String? token = accessToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+          _craftInstance = PersistableTokenOauthCraft(
+            accessToken: token,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+            client: _craftInstance._client,
+          );
+          break;
+        case PersistableBearerOauthCraft:
+          final String? token = accessToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+          _craftInstance = PersistableBearerOauthCraft(
+            accessToken: token,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+            client: _craftInstance._client,
+          );
+          break;
+        case PersistableRefreshableTokenOauthCraft:
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+
+          final String? token = refreshToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+
+          final TokenPair tokens;
+          if (accessToken == null) {
+            tokens = await refreshTokenMethod(token);
+          } else {
+            tokens = TokenPair(accessToken, token);
+          }
+
+          _craftInstance = PersistableRefreshableTokenOauthCraft(
+            tokens: tokens,
+            refreshTokenMethod: refreshTokenMethod,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+            client: _craftInstance._client,
+          );
+          break;
+        case PersistableRefreshableBearerOauthCraft:
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+
+          final String? token = refreshToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+
+          final TokenPair tokens;
+          if (accessToken == null) {
+            tokens = await refreshTokenMethod(token);
+          } else {
+            tokens = TokenPair(accessToken, token);
+          }
+
+          _craftInstance = PersistableRefreshableBearerOauthCraft(
+            tokens: tokens,
+            refreshTokenMethod: refreshTokenMethod,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+            client: _craftInstance.client,
+          );
+          break;
+        case PersistableAutoRefreshingTokenOauthCraft:
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          if (tokenExpiration == null) {
+            throw ArgumentError.notNull('tokenExpiration');
+          }
+
+          final String? token = refreshToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+
+          final TokenPair tokens;
+          if (accessToken == null) {
+            tokens = await refreshTokenMethod(token);
+          } else {
+            tokens = TokenPair(accessToken, token);
+          }
+
+          _craftInstance = PersistableAutoRefreshingTokenOauthCraft(
+            tokens: tokens,
+            refreshTokenMethod: refreshTokenMethod,
+            tokenExpiration: tokenExpiration,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+          );
+          break;
+        case PersistableAutoRefreshingBearerOauthCraft:
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          if (tokenExpiration == null) {
+            throw ArgumentError.notNull('tokenExpiration');
+          }
+
+          final String? token = refreshToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+
+          final TokenPair tokens;
+          if (accessToken == null) {
+            tokens = await refreshTokenMethod(token);
+          } else {
+            tokens = TokenPair(accessToken, token);
+          }
+
+          _craftInstance = PersistableAutoRefreshingBearerOauthCraft(
+            tokens: tokens,
+            refreshTokenMethod: refreshTokenMethod,
+            tokenExpiration: tokenExpiration,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+          );
+          break;
+        default:
+          throw UnsupportedError('Cannot promote BaseCraft to $T');
+      }
+
+      _promoted = true;
+      return;
+    }
+
+    if (_craftInstance.runtimeType == QBaseCraft) {
+      switch (T) {
+        case QTokenOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          _craftInstance = QTokenOauthCraft(
+            accessToken: accessToken,
+            client: _craftInstance._client,
+          );
+          break;
+        case QBearerOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          _craftInstance = QBearerOauthCraft(
+            accessToken: accessToken,
+            client: _craftInstance._client,
+          );
+          break;
+        case QRefreshableTokenOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          if (refreshToken == null) {
+            throw ArgumentError.notNull('refreshToken');
+          }
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          _craftInstance = QRefreshableTokenOauthCraft(
+            tokens: TokenPair(accessToken, refreshToken),
+            refreshTokenMethod: refreshTokenMethod,
+            client: _craftInstance._client,
+          );
+          break;
+        case QRefreshableBearerOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          if (refreshToken == null) {
+            throw ArgumentError.notNull('refreshToken');
+          }
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          _craftInstance = QRefreshableBearerOauthCraft(
+            tokens: TokenPair(accessToken, refreshToken),
+            refreshTokenMethod: refreshTokenMethod,
+            client: _craftInstance._client,
+          );
+          break;
+        case QAutoRefreshingTokenOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          if (refreshToken == null) {
+            throw ArgumentError.notNull('refreshToken');
+          }
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          if (tokenExpiration == null) {
+            throw ArgumentError.notNull('tokenExpiration');
+          }
+          _craftInstance = QAutoRefreshingTokenOauthCraft(
+            tokens: TokenPair(accessToken, refreshToken),
+            refreshTokenMethod: refreshTokenMethod,
+            tokenExpiration: tokenExpiration,
+            client: _craftInstance._client,
+          );
+          break;
+        case QAutoRefreshingBearerOauthCraft:
+          if (accessToken == null) {
+            throw ArgumentError.notNull('accessToken');
+          }
+          if (refreshToken == null) {
+            throw ArgumentError.notNull('refreshToken');
+          }
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          if (tokenExpiration == null) {
+            throw ArgumentError.notNull('tokenExpiration');
+          }
+          _craftInstance = QAutoRefreshingBearerOauthCraft(
+            tokens: TokenPair(accessToken, refreshToken),
+            refreshTokenMethod: refreshTokenMethod,
+            tokenExpiration: tokenExpiration,
+            client: _craftInstance._client,
+          );
+          break;
+        case QPersistableTokenOauthCraft:
+          final String? token = accessToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+          _craftInstance = QPersistableTokenOauthCraft(
+            accessToken: token,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+            client: _craftInstance._client,
+          );
+          break;
+        case QPersistableBearerOauthCraft:
+          final String? token = accessToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+          _craftInstance = QPersistableBearerOauthCraft(
+            accessToken: token,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+            client: _craftInstance._client,
+          );
+          break;
+        case QPersistableRefreshableTokenOauthCraft:
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+
+          final String? token = refreshToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+
+          final TokenPair tokens;
+          if (accessToken == null) {
+            tokens = await refreshTokenMethod(token);
+          } else {
+            tokens = TokenPair(accessToken, token);
+          }
+
+          _craftInstance = QPersistableRefreshableTokenOauthCraft(
+            tokens: tokens,
+            refreshTokenMethod: refreshTokenMethod,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+            client: _craftInstance._client,
+          );
+          break;
+        case QPersistableRefreshableBearerOauthCraft:
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+
+          final String? token = refreshToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+
+          final TokenPair tokens;
+          if (accessToken == null) {
+            tokens = await refreshTokenMethod(token);
+          } else {
+            tokens = TokenPair(accessToken, token);
+          }
+
+          _craftInstance = QPersistableRefreshableBearerOauthCraft(
+            tokens: tokens,
+            refreshTokenMethod: refreshTokenMethod,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+            client: _craftInstance.client,
+          );
+          break;
+        case QPersistableAutoRefreshingTokenOauthCraft:
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          if (tokenExpiration == null) {
+            throw ArgumentError.notNull('tokenExpiration');
+          }
+
+          final String? token = refreshToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+
+          final TokenPair tokens;
+          if (accessToken == null) {
+            tokens = await refreshTokenMethod(token);
+          } else {
+            tokens = TokenPair(accessToken, token);
+          }
+
+          _craftInstance = QPersistableAutoRefreshingTokenOauthCraft(
+            tokens: tokens,
+            refreshTokenMethod: refreshTokenMethod,
+            tokenExpiration: tokenExpiration,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+          );
+          break;
+        case QPersistableAutoRefreshingBearerOauthCraft:
+          if (refreshTokenMethod == null) {
+            throw ArgumentError.notNull('refreshTokenMethod');
+          }
+          if (tokenExpiration == null) {
+            throw ArgumentError.notNull('tokenExpiration');
+          }
+
+          final String? token = refreshToken ??
+              await Persistable._getSavedToken(
+                tokenStorageKey: tokenStorageKey,
+                tokenStorage: tokenStorage,
+              );
+          if (token == null) throw PersistableCreationError();
+
+          final TokenPair tokens;
+          if (accessToken == null) {
+            tokens = await refreshTokenMethod(token);
+          } else {
+            tokens = TokenPair(accessToken, token);
+          }
+
+          _craftInstance = QPersistableAutoRefreshingBearerOauthCraft(
+            tokens: tokens,
+            refreshTokenMethod: refreshTokenMethod,
+            tokenExpiration: tokenExpiration,
+            tokenStorageKey: tokenStorageKey,
+            tokenStorage: tokenStorage,
+          );
+          break;
+        default:
+          throw UnsupportedError('Cannot promote QBaseCraft to $T');
+      }
+
+      _promoted = true;
+      return;
+    }
+
+    throw UnsupportedError(
+      'Cannot promote ${_craftInstance.runtimeType} to $T',
     );
   }
 }
 
-/// [RefreshableTokenOauthCraft] that persists refresh token using
-/// [RefreshTokenPersistable].
-class PersistableRefreshableTokenOauthCraft extends RefreshableTokenOauthCraft
-    with Persistable, RefreshTokenPersistable {
-  /// Creates new [PersistableRefreshableTokenOauthCraft] instance. Refresh
-  /// token is automatically persisted.
-  PersistableRefreshableTokenOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    String? tokenStorageKey,
-    TokenStorage? tokenStorage,
-    super.client,
-  }) {
-    _initPersistable(
-      tokenStorageKey: tokenStorageKey,
-      tokenStorage: tokenStorage,
-    );
+/// Error denoting failed creation of a Persistable variant.
+class PersistableCreationError extends Error {
+  @override
+  String toString() {
+    return 'Token was not provided and could also not be obtained from storage';
   }
-}
-
-/// [RefreshableBearerOauthCraft] that persists refresh token using
-/// [RefreshTokenPersistable].
-class PersistableRefreshableBearerOauthCraft extends RefreshableBearerOauthCraft
-    with Persistable, RefreshTokenPersistable {
-  /// Creates new [PersistableRefreshableBearerOauthCraft] instance. Refresh
-  /// token is automatically persisted.
-  PersistableRefreshableBearerOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    String? tokenStorageKey,
-    TokenStorage? tokenStorage,
-    super.client,
-  }) {
-    _initPersistable(
-      tokenStorageKey: tokenStorageKey,
-      tokenStorage: tokenStorage,
-    );
-  }
-}
-
-/// [AutoRefreshingTokenOauthCraft] that persists refresh token using
-/// [RefreshTokenPersistable].
-class PersistableAutoRefreshingTokenOauthCraft
-    extends AutoRefreshingTokenOauthCraft
-    with Persistable, RefreshTokenPersistable {
-  /// Creates new [PersistableAutoRefreshingTokenOauthCraft] instance.
-  /// Refresh token is automatically persisted.
-  PersistableAutoRefreshingTokenOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required super.tokenExpiration,
-    String? tokenStorageKey,
-    TokenStorage? tokenStorage,
-    super.client,
-  }) {
-    _initPersistable(
-      tokenStorageKey: tokenStorageKey,
-      tokenStorage: tokenStorage,
-    );
-  }
-}
-
-/// [AutoRefreshingBearerOauthCraft] that persists refresh token using
-/// [RefreshTokenPersistable].
-class PersistableAutoRefreshingBearerOauthCraft
-    extends AutoRefreshingBearerOauthCraft
-    with Persistable, RefreshTokenPersistable {
-  /// Creates new [PersistableAutoRefreshingBearerOauthCraft] instance.
-  /// Refresh token is automatically persisted.
-  PersistableAutoRefreshingBearerOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required super.tokenExpiration,
-    String? tokenStorageKey,
-    TokenStorage? tokenStorage,
-    super.client,
-  }) {
-    _initPersistable(
-      tokenStorageKey: tokenStorageKey,
-      tokenStorage: tokenStorage,
-    );
-  }
-}
-
-/// A [TokenOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-class QTokenOauthCraft extends TokenOauthCraft with RequestQueueing {
-  /// Creates new [QTokenOauthCraft] instance with [accessToken] and [client].
-  QTokenOauthCraft({required super.accessToken, super.client});
-}
-
-/// A [BearerOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-class QBearerOauthCraft extends BearerOauthCraft with RequestQueueing {
-  /// Creates new [QBearerOauthCraft] instance with [accessToken] and [client].
-  QBearerOauthCraft({required super.accessToken, super.client});
-}
-
-/// A [RefreshableTokenOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-class QRefreshableTokenOauthCraft extends RefreshableTokenOauthCraft
-    with RequestQueueing {
-  /// Creates new [QRefreshableTokenOauthCraft] instance with tokens,
-  /// a refresh token method, and a [client].
-  QRefreshableTokenOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    super.client,
-  });
-}
-
-/// A [RefreshableBearerOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-class QRefreshableBearerOauthCraft extends RefreshableBearerOauthCraft
-    with RequestQueueing {
-  /// Creates new [QRefreshableBearerOauthCraft] instance with tokens,
-  /// a refresh token method, and a [client].
-  QRefreshableBearerOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    super.client,
-  });
-}
-
-/// An [AutoRefreshingTokenOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-class QAutoRefreshingTokenOauthCraft extends AutoRefreshingTokenOauthCraft
-    with RequestQueueing {
-  /// Creates new [QAutoRefreshingTokenOauthCraft] instance with tokens,
-  /// a refresh token method, a token expiration method, and a [client].
-  QAutoRefreshingTokenOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required super.tokenExpiration,
-    super.client,
-  });
-}
-
-/// An [AutoRefreshingBearerOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-class QAutoRefreshingBearerOauthCraft extends AutoRefreshingBearerOauthCraft
-    with RequestQueueing {
-  /// Creates new [QAutoRefreshingBearerOauthCraft] instance with tokens,
-  /// a refresh token method, a token expiration method, and a [client].
-  QAutoRefreshingBearerOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required super.tokenExpiration,
-    super.client,
-  });
-}
-
-/// A [PersistableTokenOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-class QPersistableTokenOauthCraft extends PersistableTokenOauthCraft
-    with RequestQueueing {
-  /// Creates new [QPersistableTokenOauthCraft] instance with [accessToken],
-  /// desired token storage key or token storage, and a [client].
-  QPersistableTokenOauthCraft({
-    required super.accessToken,
-    super.tokenStorageKey,
-    super.tokenStorage,
-    super.client,
-  });
-}
-
-/// A [PersistableBearerOauthCraft] with ability of queueing requests using
-/// [RequestQueueing].
-class QPersistableBearerOauthCraft extends PersistableBearerOauthCraft
-    with RequestQueueing {
-  /// Creates new [QPersistableBearerOauthCraft] instance with [accessToken],
-  /// desired token storage key or token storage, and a [client].
-  QPersistableBearerOauthCraft({
-    required super.accessToken,
-    super.tokenStorageKey,
-    super.tokenStorage,
-    super.client,
-  });
-}
-
-/// A [PersistableRefreshableTokenOauthCraft] with ability of queueing requests
-/// using [RequestQueueing].
-class QPersistableRefreshableTokenOauthCraft
-    extends PersistableRefreshableTokenOauthCraft with RequestQueueing {
-  /// Creates new [QPersistableRefreshableTokenOauthCraft] instance with tokens
-  /// pair, a refresh token method, desired token storage key or token storage,
-  /// and a [client].
-  QPersistableRefreshableTokenOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    super.tokenStorageKey,
-    super.tokenStorage,
-    super.client,
-  });
-}
-
-/// A [PersistableRefreshableBearerOauthCraft] with ability of queueing
-/// requests using [RequestQueueing].
-class QPersistableRefreshableBearerOauthCraft
-    extends PersistableRefreshableBearerOauthCraft with RequestQueueing {
-  /// Creates new [QPersistableRefreshableBearerOauthCraft] instance with
-  /// tokens pair, a refresh token method, desired token storage key or token
-  /// storage, and a [client].
-  QPersistableRefreshableBearerOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    super.tokenStorageKey,
-    super.tokenStorage,
-    super.client,
-  });
-}
-
-/// A [PersistableAutoRefreshingTokenOauthCraft] with ability of queueing
-/// requests using [RequestQueueing].
-class QPersistableAutoRefreshingTokenOauthCraft
-    extends PersistableAutoRefreshingTokenOauthCraft with RequestQueueing {
-  /// Creates new [QPersistableAutoRefreshingTokenOauthCraft] instance with
-  /// tokens pair, a refresh token method, token expiration method, desired
-  /// token storage key or token storage, and a [client].
-  QPersistableAutoRefreshingTokenOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required super.tokenExpiration,
-    super.tokenStorageKey,
-    super.tokenStorage,
-    super.client,
-  });
-}
-
-/// A [PersistableAutoRefreshingBearerOauthCraft] with ability of queueing
-/// requests using [RequestQueueing].
-class QPersistableAutoRefreshingBearerOauthCraft
-    extends PersistableAutoRefreshingBearerOauthCraft with RequestQueueing {
-  /// Creates new [QPersistableAutoRefreshingBearerOauthCraft] instance with
-  /// tokens pair, a refresh token method, token expiration method, desired
-  /// token storage key or token storage, and a [client].
-  QPersistableAutoRefreshingBearerOauthCraft({
-    required super.tokens,
-    required super.refreshTokenMethod,
-    required super.tokenExpiration,
-    super.tokenStorageKey,
-    super.tokenStorage,
-    super.client,
-  });
 }
