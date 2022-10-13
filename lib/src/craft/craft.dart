@@ -35,7 +35,7 @@ part 'request_queueing.dart';
 /// [AutoRefreshingBearerOauthCraft], [PersistableTokenOauthCraft],
 /// [PersistableBearerOauthCraft], [PersistableRefreshableTokenOauthCraft],
 /// [PersistableRefreshableBearerOauthCraft],
-/// [PersistableAutoRefreshingTokenOauthCraft],
+/// [PersistableAutoRefreshingTokenOauthCraft], and
 /// [PersistableAutoRefreshingBearerOauthCraft], and request queueing variants
 /// [QBaseCraft], [QTokenOauthCraft],
 /// [QBearerOauthCraft], [QRefreshableTokenOauthCraft],
@@ -43,8 +43,10 @@ part 'request_queueing.dart';
 /// [QAutoRefreshingBearerOauthCraft], [QPersistableTokenOauthCraft],
 /// [QPersistableBearerOauthCraft], [QPersistableRefreshableTokenOauthCraft],
 /// [QPersistableRefreshableBearerOauthCraft],
-/// [QPersistableAutoRefreshingTokenOauthCraft],
-/// [QPersistableAutoRefreshingBearerOauthCraft],
+/// [QPersistableAutoRefreshingTokenOauthCraft], and
+/// [QPersistableAutoRefreshingBearerOauthCraft].
+///
+/// {@example example/craft_example.dart}
 class Craft<T extends BaseCraft> {
   /// {@template craft.craft.craft_instance}
   /// The underlying craft.
