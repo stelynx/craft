@@ -615,10 +615,6 @@ class Craft<T extends BaseCraft> {
       _promoted = true;
       return;
     }
-
-    throw UnsupportedError(
-      'Cannot promote ${_craftInstance.runtimeType} to $T',
-    );
   }
 }
 

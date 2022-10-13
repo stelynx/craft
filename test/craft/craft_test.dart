@@ -82,6 +82,16 @@ void main() {
     });
 
     test(
+      'should throw UnsupportedError when promoting BaseCraft to unknown (custom) craft',
+      () async {
+        final Craft<_ExtendedBaseCraft> craft =
+            await Craft.brew<_ExtendedBaseCraft>();
+
+        expect(craft.promote, throwsUnsupportedError);
+      },
+    );
+
+    test(
       'should throw ArgumentError when promoting to TokenOauthCraft without accessToken',
       () async {
         final Craft<TokenOauthCraft> craft =
@@ -1089,6 +1099,16 @@ void main() {
     });
 
     test(
+      'should throw UnsupportedError when promoting QBaseCraft to unknown (custom) craft',
+      () async {
+        final Craft<_ExtendedQBaseCraft> craft =
+            await Craft.brew<_ExtendedQBaseCraft>();
+
+        expect(craft.promote, throwsUnsupportedError);
+      },
+    );
+
+    test(
       'should throw ArgumentError when promoting to QTokenOauthCraft without accessToken',
       () async {
         final Craft<QTokenOauthCraft> craft =
@@ -2088,4 +2108,17 @@ void main() {
       },
     );
   });
+
+  group('PersistableAutoPromotionError', () {
+    test('should print a meaningful message', () {
+      expect(
+        PersistableAutoPromotionError().toString(),
+        isNot(equals("Instance of 'PersistableAutoPromotionError'")),
+      );
+    });
+  });
 }
+
+class _ExtendedBaseCraft extends BaseCraft {}
+
+class _ExtendedQBaseCraft extends QBaseCraft {}

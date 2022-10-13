@@ -68,6 +68,15 @@ void main() {
         isNull,
       );
     });
+
+    test('should complete normally with tokenStorageKey provided', () {
+      TestWidgetsFlutterBinding.ensureInitialized();
+
+      expect(
+        () => Persistable.getSavedToken(tokenStorageKey: 'token_key'),
+        returnsNormally,
+      );
+    });
   });
 
   group('PersistableTokenOauthCraft', () {
