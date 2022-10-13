@@ -1,6 +1,8 @@
-/// This example shows how to use a wrapper [Craft] class to create an actual
-/// craft variant. This is the preferred way of creating crafts, since swapping
-/// from one implementation to the other can be done with ease.
+/// This example shows how to use a specific implementation of craft without the
+/// wrapper [Craft] class. This is not recommended and setting the persisted
+/// token must be done manually. However, for simple craft variants like basic
+/// [AutoRefreshingBearerOauthCraft] without token persistance, this might be
+/// the preferred way.
 
 import 'package:craft/craft.dart';
 import 'package:http/http.dart' as http;
@@ -24,38 +26,19 @@ class ApiService {
   static ApiService? _instance;
   static ApiService get instance => _instance!;
 
-  ApiService._({
-    required Craft<PersistableAutoRefreshingBearerOauthCraft> craft,
-  }) : _craft = craft;
+  ApiService._({required BaseCraft craft}) : _craft = craft;
 
-  factory ApiService({
-    required Craft<PersistableAutoRefreshingBearerOauthCraft> craft,
-  }) {
+  factory ApiService({required BaseCraft craft}) {
     if (_instance != null) throw StateError('Already created');
 
     _instance = ApiService._(craft: craft);
     return instance;
   }
 
-  late final Craft<PersistableAutoRefreshingBearerOauthCraft> _craft;
-
-  /// Brews the craft. If the refresh token has been previously persisted, the
-  /// automatic promotion will succeed because access and (new) refresh token
-  /// will be obtained using saved refresh token and a refreshTokenMethod. This
-  /// means that this function basically returns if the user is already
-  /// authenticated.
-  Future<bool> init() async {
-    _craft = await Craft.brew<PersistableAutoRefreshingBearerOauthCraft>(
-      refreshTokenMethod: _refreshTokens,
-      tokenExpiration: _tokenExpiration,
-      tokenStorageKey: 'craft_example_token_storage_key',
-    );
-
-    return _craft.promoted;
-  }
+  late BaseCraft _craft;
 
   Future<void> login(LoginData loginData) async {
-    final http.Response response = await _craft.instance.send(
+    final http.Response response = await _craft.send(
       Request<LoginData>(
         HttpMethod.post,
         Uri.parse('https://example.com/login'),
@@ -65,9 +48,8 @@ class ApiService {
 
     final TokenPair tokenPair = _tokensFromLoginResponse(response);
 
-    await _craft.promote(
-      accessToken: tokenPair.access,
-      refreshToken: tokenPair.refresh,
+    _craft = PersistableAutoRefreshingBearerOauthCraft(
+      tokens: tokenPair,
       refreshTokenMethod: _refreshTokens,
       tokenExpiration: _tokenExpiration,
       tokenStorageKey: 'craft_example_token_storage_key',
@@ -80,7 +62,7 @@ class ApiService {
   // We assume here that only new access token is issued and refresh token stays
   // the same.
   Future<TokenPair> _refreshTokens(String refreshToken) async {
-    final http.Response response = await _craft.instance.send(
+    final http.Response response = await _craft.send(
       Request<String>.fromString(
         HttpMethod.post,
         'https://example.com/login/refresh',
@@ -110,21 +92,4 @@ class ApiService {
   int _parseExpirationMsFromJwtToken(String jwtToken) {
     return DateTime.now().millisecondsSinceEpoch + 60000;
   }
-}
-
-/// This is what you would normally do in your splash screen or other
-/// initialization logic.
-Future<void> main() async {
-  final ApiService apiService = ApiService.instance;
-
-  final bool userLoggedIn = await apiService.init();
-  if (userLoggedIn) {
-    // e.g. proceed to home screen
-    return;
-  }
-
-  // proceed to login screen and do:
-  await apiService.login(const LoginData('username', 'password'));
-
-  // The craft should now be promoted.
 }

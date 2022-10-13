@@ -45,25 +45,3 @@ abstract class OauthCraft extends BaseCraft {
     return super.send<T>(request);
   }
 }
-
-/// [OauthCraft] that uses "Token [accessToken]" as Authorization header.
-class TokenOauthCraft extends OauthCraft {
-  /// Creates new instance of [TokenOauthCraft] with [accessToken]. Underlying
-  /// client can be provided as well, if not, the default one is used.
-  TokenOauthCraft({required super.accessToken, super.client});
-
-  /// {@macro craft.oauth_craft.authorization_header_value}
-  @override
-  String get authorizationHeaderValue => 'Token $_accessToken';
-}
-
-/// [OauthCraft] that uses "Bearer [accessToken]" as Authorization header.
-class BearerOauthCraft extends OauthCraft {
-  /// Creates new instance of [BearerOauthCraft] with [accessToken]. Underlying
-  /// client can be provided as well, if not, the default one is used.
-  BearerOauthCraft({required super.accessToken, super.client});
-
-  /// {@macro craft.oauth_craft.authorization_header_value}
-  @override
-  String get authorizationHeaderValue => 'Bearer $_accessToken';
-}
