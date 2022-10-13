@@ -1,5 +1,6 @@
 import 'package:craft/craft.dart';
 import 'package:craft/src/utils/token_storage.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
@@ -69,14 +70,19 @@ void main() {
       );
     });
 
-    test('should complete normally with tokenStorageKey provided', () {
-      TestWidgetsFlutterBinding.ensureInitialized();
+    test(
+      'should use FlutterSecureTokenStorage when tokenStorageKey is provided',
+      () {
+        TestWidgetsFlutterBinding.ensureInitialized();
 
-      expect(
-        () => Persistable.getSavedToken(tokenStorageKey: 'token_key'),
-        returnsNormally,
-      );
-    });
+        expect(
+          () => Persistable.getSavedToken(tokenStorageKey: 'token_key'),
+          // The call throws because FlutterSecureStorage is missing the
+          // implementation.
+          throwsA(isA<MissingPluginException>()),
+        );
+      },
+    );
   });
 
   group('PersistableTokenOauthCraft', () {
