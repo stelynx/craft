@@ -29,7 +29,7 @@ mixin AutoRefreshing on Refreshable {
     required Duration Function(String) tokenExpiration,
   }) {
     _tokenExpiration = tokenExpiration;
-    _refreshTimer = Timer(_tokenExpiration(_refreshToken), refreshTokens);
+    _refreshTimer = Timer(_tokenExpiration(_accessToken), refreshTokens);
   }
 
   /// Cancels the [refreshTimer] and calls the super close method.
