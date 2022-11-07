@@ -1,3 +1,7 @@
+## 1.0.1
+
+Fix a bug where refresh token was used instead of refresh token for token expiration extraction.
+
 ## 1.0.0
 
 - Add master `Craft` class that makes working with crafts a 🍰.
