@@ -46,6 +46,9 @@ void main() {
 
       await craft.send<void>(Request<void>(HttpMethod.delete, uri));
       verify(mockClient.delete(uri)).called(1);
+
+      await craft.send<void>(Request<void>(HttpMethod.patch, uri));
+      verify(mockClient.patch(uri)).called(1);
     });
   });
 

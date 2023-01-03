@@ -28,7 +28,7 @@ class MockHttpClient extends Mock implements http.Client {
     Map<String, String>? headers,
   }) =>
       super.noSuchMethod(
-        Invocation.method(#get, <Uri?>[url]),
+        Invocation.method(#post, <Uri?>[url]),
         returnValue:
             Future<http.Response>(() async => http.Response('', HttpStatus.ok)),
         returnValueForMissingStub:
@@ -43,7 +43,22 @@ class MockHttpClient extends Mock implements http.Client {
     Map<String, String>? headers,
   }) =>
       super.noSuchMethod(
-        Invocation.method(#get, <Uri?>[url]),
+        Invocation.method(#delete, <Uri?>[url]),
+        returnValue:
+            Future<http.Response>(() async => http.Response('', HttpStatus.ok)),
+        returnValueForMissingStub:
+            Future<http.Response>(() async => http.Response('', HttpStatus.ok)),
+      ) as Future<http.Response>;
+
+  @override
+  Future<http.Response> patch(
+    Uri? url, {
+    Object? body,
+    Encoding? encoding,
+    Map<String, String>? headers,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(#patch, <Uri?>[url]),
         returnValue:
             Future<http.Response>(() async => http.Response('', HttpStatus.ok)),
         returnValueForMissingStub:
