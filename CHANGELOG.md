@@ -1,3 +1,7 @@
+## 1.1.0
+
+Add `HttpMethod.patch` and support for it.
+
 ## 1.0.1
 
 Fix a bug where refresh token was used instead of refresh token for token expiration extraction.

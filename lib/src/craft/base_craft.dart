@@ -43,6 +43,12 @@ class BaseCraft {
           headers: request.headers,
           body: serializeBody<T>(request.body),
         );
+      case HttpMethod.patch:
+        return _client.patch(
+          request.uri,
+          headers: request.headers,
+          body: serializeBody<T>(request.body),
+        );
     }
   }
 

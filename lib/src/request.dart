@@ -9,7 +9,10 @@ enum HttpMethod {
   post,
 
   /// An HTTP DELETE method.
-  delete;
+  delete,
+
+  /// An HTTP PATCH method.
+  patch;
 }
 
 /// A base request class providing information about an HTTP request.
